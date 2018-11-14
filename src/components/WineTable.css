@@ -1,0 +1,9 @@
+.WT-header span {
+  font-size: calc(12px + 2vmin);
+  margin-left: 25px;
+  margin-right: 25px;
+}
+.WT-header {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

@@ -1,53 +1,79 @@
 import React from 'react';
-import '../tailwind.min.css';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import AppBar from 'material-ui/AppBar';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
+import { Redirect } from 'react-router-dom';
+
+const REST_URL = process.env.REST_URL || 'http://localhost:4000';
 
 class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {username: '', password: ''};
 
-    this.handleUsernameChange = this.handleUsernameChange.bind(this);
-    this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleUsernameChange(event) {
-    this.setState({username: event.target.value});
-  }
-
-  handlePasswordChange(event) {
-    this.setState({password: event.target.value});
-  }
-
   handleSubmit(event) {
-    alert('A name was submitted: ' + this.state);
-    event.preventDefault();
+//    alert('A name was submitted: ' + JSON.stringify(this.state));
+    fetch(REST_URL + '/auth/login', {
+      method: 'post',
+      mode: 'cors',
+      body: JSON.stringify(this.state),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    })
+    .then(function(response) {
+      console.log("Login Status: " + response.status);
+      if (response.ok) {
+        console.log('Login successful');
+        window.location = 'winelist';
+        window.temptkn = response.body.token;
+      } else {
+        // push error further for the next `catch`, like
+        return Promise.reject(response);
+      }
+    })
+    .catch(rejected => {
+      alert('Failed: ' + rejected.statusText);
+      console.log(rejected);
+    });
   }
 
   render() {
     return (
       <React.Fragment>
-        <h1>Winelist Login</h1><br/>
-        <div class="float-left mx-5 bg-blue">
-        <form onSubmit={this.handleSubmit}>
-          <label>
-            UserName:
-            <input class="ml-2 mt-5 mb-5 mr-5"
-                   type="text" value={this.state.username} onChange={this.handleUsernameChange} />
-          </label>
-          <br/>
-          <label>
-            Password:
-            <input type="text" value={this.state.password} onChange={this.handlePasswordChange} />
-          </label>
-          <br/>
-          <input class="justify-center" type="submit" value="Submit" />
-        </form>
+        <div>
+          <MuiThemeProvider>
+            <div>
+            <AppBar title="Winelist Login"/>
+            <div>
+              <TextField hintText="Enter your username" floatingLabelText="Username" style={styleML}
+                         onChange={(event,newValue) => this.setState({username: newValue})} />
+              <br/>
+              <TextField hintText="Enter your password" floatingLabelText="Password" style={styleML}
+                         onChange={(event,newValue) => this.setState({password: newValue})} />
+              <br/>
+              <RaisedButton label="Submit" primary={true} style={style}
+                            onClick={(event) => this.handleSubmit(event)} />
+            </div>
+            </div>
+          </MuiThemeProvider>
         </div>
       </React.Fragment>
     )
   }
 }
+
+const style = {
+  margin: 15,
+};
+
+const styleML = {
+  marginLeft: 15,
+};
 
 export default Login;
 
