@@ -1,9 +1,7 @@
 import React from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import { Redirect } from 'react-router-dom';
 
 const REST_URL = process.env.REST_URL || 'http://localhost:4000';
 
@@ -48,17 +46,19 @@ class Login extends React.Component {
         <div>
           <MuiThemeProvider>
             <div>
-            <AppBar title="Winelist Login"/>
-            <div>
-              <TextField hintText="Enter your username" floatingLabelText="Username" style={styleML}
-                         onChange={(event,newValue) => this.setState({username: newValue})} />
-              <br/>
-              <TextField hintText="Enter your password" floatingLabelText="Password" style={styleML}
-                         onChange={(event,newValue) => this.setState({password: newValue})} />
-              <br/>
-              <RaisedButton label="Submit" primary={true} style={style}
-                            onClick={(event) => this.handleSubmit(event)} />
-            </div>
+              <div className="App-bar">
+                <h3>Winelist Login</h3>
+              </div>
+              <div>
+                <TextField hintText="Enter your username" floatingLabelText="Username" style={styleML}
+                           onChange={(event,newValue) => this.setState({username: newValue})} />
+                <br/>
+                <TextField hintText="Enter your password" floatingLabelText="Password" style={styleML}
+                           onChange={(event,newValue) => this.setState({password: newValue})} />
+                <br/>
+                <RaisedButton label="Submit" primary={true} style={style}
+                              onClick={(event) => this.handleSubmit(event)} />
+              </div>
             </div>
           </MuiThemeProvider>
         </div>

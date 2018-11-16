@@ -3,7 +3,6 @@ import Modal from 'react-modal';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton';
-import TextField from 'material-ui/TextField';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
@@ -46,7 +45,9 @@ class RemoveDialog extends React.Component {
   }
 
   handleSubmit(event) {
-    var close = false;
+    this.props.callback(event, this.props.row);
+
+    var close = true;
 
     fetch('/wines/' + this.state.wineId, {
       method: 'delete',
@@ -76,7 +77,7 @@ class RemoveDialog extends React.Component {
   render() {
     return (
       <div>
-        <button onClick={this.openModal}><DeleteForeverIcon/></button>
+        <button onClick={this.openModal}><DeleteForeverIcon color="action"/></button>
         <Modal
           isOpen={this.state.modalIsOpen}
           onAfterOpen={this.afterOpenModal}
@@ -116,10 +117,6 @@ class RemoveDialog extends React.Component {
 
 const style = {
   margin: 15
-};
-
-const styleML = {
-  marginLeft: 15,
 };
 
 const customStyles = {

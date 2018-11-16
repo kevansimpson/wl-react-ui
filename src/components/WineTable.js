@@ -2,16 +2,16 @@ import React from 'react';
 //import matchSorter from 'match-sorter';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
+
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import AppBar from 'material-ui/AppBar';
-import Typography from '@material-ui/core/Typography';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+import Toolbar from '@material-ui/core/Toolbar';
+
 import './WineTable.css';
+import CreateDialog from './CreateDialog'
 import EditDialog from './EditDialog'
 import RemoveDialog from './RemoveDialog'
 
-const REST_URL = process.env.REST_URL || 'http://localhost:4000';
 const TABLE_HEIGHT = process.env.TABLE_HEIGHT || '500px';
 
 class WineTable extends React.Component {
@@ -32,7 +32,7 @@ class WineTable extends React.Component {
   }
 
   loadWineData() {
-    fetch(REST_URL + '/wines', {
+    fetch('/wines', {
       method: 'get',
       mode: 'cors',
       credentials: 'include'
@@ -42,14 +42,7 @@ class WineTable extends React.Component {
     })
     .then(data => {
         if (data) {
-          var bottleCount = 0;
-          var totalValue = 0;
-          data.forEach(function (bottle) {
-            var q = parseInt(bottle.qty);
-            bottleCount += q;
-            totalValue += (q * bottle.price);
-          })
-          this.setState({ winelist: data, bottleCount: bottleCount, totalCount: data.length, totalValue: totalValue.toFixed(2) });
+          this.updateState(data);
         } else {
           console.log('Failed to get data')
         }
@@ -59,56 +52,99 @@ class WineTable extends React.Component {
     });
   }
 
+  updateState(data) {
+    this.setState({ winelist: data });
+    this.updateHeader(data);
+  }
+
+  updateHeader(data) {
+    if (data) {
+      var bottleCount = 0;
+      var totalValue = 0;
+      data.forEach(function (bottle) {
+        var q = parseInt(bottle.qty);
+        bottleCount += q;
+        totalValue += (q * bottle.price);
+      })
+      this.setState({ bottleCount: bottleCount, totalCount: data.length, totalValue: totalValue.toFixed(2) });
+    }
+  }
+
+  insert(newBottle) {
+    console.log('Adding new bottle...');
+    console.log(newBottle);
+    this.loadWineData();
+  }
+
   update(event, newValue, key, row) {
-    console.log(event);
-    console.log(newValue);
-    console.log(bottle);
-    console.log(row);
-    console.log('update foobar');
     const wl = this.state.winelist;
     const bottle = wl[row];
     console.log('Updating ' + key + ' => ' + newValue);
     bottle[key] = newValue;
-//    wl[row] = bottle;
     this.setState({winelist: wl});
+  }
+
+  remove(event, row) {
+    const wl = this.state.winelist;
+    console.log('Removing row: '+ row);
+    wl.splice(row, 1);
+    this.setState({winelist: wl});
+  }
+
+  filterChanged(filtered) {
+    this.setState({ filtered });
+    const currentRecords = this.selectTable.getResolvedState().sortedData;
+    if (currentRecords && currentRecords.length > 0) {
+      this.updateHeader(currentRecords);
+    }
+  }
+
+  clearFilters() {
+    console.log('clear filters');
+    this.setState({ filtered: [] });
+    this.updateHeader(this.state.winelist);
   }
 //              <span>Average Value / Bottle:  {this.state.averageValue}</span>
 
   render() {
-    const { data } = this.state.winelist || [];
     return (
       <div>
         <MuiThemeProvider>
           <div>
-            <div>
-              <AppBar title='Winelist'/>
+            <div className="App-bar">
+              <h3>JMS Winelist</h3>
             </div>
             <div className="WT-header">
-              <span><button><AddCircleIcon/> Create Entry</button></span>
-              <span>Collection Value:  USD {this.state.totalValue}</span>
-              <span>Individual Bottle Count:  {this.state.bottleCount}</span>
-              <span>Total Count:  {this.state.totalCount}</span>
+              <Toolbar>
+                <span><CreateDialog callback={this.insert.bind(this)}/></span>
+                <span>Collection Value:  USD {this.state.totalValue}</span>
+                <span>Individual Bottle Count:  {this.state.bottleCount}</span>
+                <span>Total Count:  {this.state.totalCount}</span>
+              </Toolbar>
             </div>
             <ReactTable
               data={this.state.winelist}
+              ref={(r) => {
+                this.selectTable = r;
+              }}
               filterable
               filtered={this.state.filtered}
-              onFilteredChange={filtered => {this.setState({ filtered });}}
+              onFilteredChange={this.filterChanged.bind(this)}
               defaultFilterMethod={(filter, row) =>
                 String(row[filter.id]) === filter.value}
               columns={[
                 {
                   Header: '',
                   id: 'edit-button',
-                  Cell: row => (<EditDialog row={row.index} bottle={this.state.winelist[row.index]} changeFxn={this.update.bind(this)}/>),
-                  Filter: <button onClick={()=>this.setState({ filtered: [] })}><RemoveCircleIcon/></button>,
+                  Cell: row => (<EditDialog row={row.index} bottle={this.state.winelist[row.index]} callback={this.update.bind(this)}/>),
+                  Filter: <button onClick={this.clearFilters.bind(this)}><RemoveCircleIcon color="action"/></button>,
                   width: 50
                 },
                 {
                   Header: '',
                   id: 'delete-button',
-                  Cell: row => (<RemoveDialog bottle={this.state.winelist[row.index]}/>),
-                  Filter: <button onClick={()=>this.setState({ filtered: [] })}><RemoveCircleIcon/></button>,
+                  Cell: row => (<RemoveDialog row={row.index} bottle={this.state.winelist[row.index]} callback={this.remove.bind(this)}/>),
+                  Filter: <span/>, //<button onClick={()=>this.setState({ filtered: [] })}><RemoveCircleIcon color="action"/></button>,
                   width: 50
                 },
                 {

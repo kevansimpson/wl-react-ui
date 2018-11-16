@@ -2,18 +2,26 @@ import React from 'react';
 import Modal from 'react-modal';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AppBar from 'material-ui/AppBar';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import EditIcon from '@material-ui/icons/Edit';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 Modal.setAppElement('#root')
 
-class EditDialog extends React.Component {
+class CreateDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      wineId: props.bottle.id,
+      producer: '',
+      name: '',
+      type: '',
+      year: '',
+      price: '0.0',
+      qty: '0',
+      bin: '',
+      ready: '',
+      rating: '',
       modalIsOpen: false
     };
 
@@ -27,44 +35,48 @@ class EditDialog extends React.Component {
   }
 
   afterOpenModal() {
-    // references are now sync'd and can be accessed.
-//    this.subtitle.style.color = '#f00';
-//            <h2 ref={subtitle => this.subtitle = subtitle}>Hello</h2>
+    this.setState({
+        producer: '',
+        name: '',
+        type: '',
+        year: '',
+        price: '0.0',
+        qty: '0',
+        bin: '',
+        ready: '',
+        rating: '',
+    });
   }
 
   closeModal() {
     this.setState({modalIsOpen: false});
   }
 
-  handleChange(event, newValue, key) {
-    this.props.callback(event, newValue, key, this.props.row);
-    this.props.bottle[key] = newValue;
-  }
-
   handleSubmit(event) {
-//    var data = this.state;
-//    delete data["modalIsOpen"];
-    console.log("Update data: " + JSON.stringify(this.props.bottle));
-
-    fetch('/wines/' + this.state.wineId, {
-      method: 'put',
+    var data = this.state;
+    delete data["modalIsOpen"];
+    console.log("Create data: " + JSON.stringify(data));
+    const cb = this.props.callback;
+    fetch('/wines', {
+      method: 'post',
       mode: 'cors',
-      body: JSON.stringify(this.props.bottle),
+      body: JSON.stringify(data),
       headers: new Headers({
         'Content-Type': 'application/json'
       })
     })
     .then(function(response) {
-      console.log("Update Status: " + response.status);
+      console.log("Create Status: " + response.status);
       if (response.ok) {
-        console.log('Update successful');
+        console.log('Create successful');
+        cb(data);
       } else {
         // push error further for the next `catch`, like
         return Promise.reject(response);
       }
     })
     .catch(rejected => {
-      alert('Failed Update: ' + rejected.statusText);
+      alert('Failed Create: ' + rejected.statusText);
       console.log(rejected);
     });
 
@@ -74,48 +86,48 @@ class EditDialog extends React.Component {
   render() {
     return (
       <div>
-        <button onClick={this.openModal}><EditIcon color="action"/></button>
+        <button onClick={this.openModal}><AddCircleIcon color="action"/> Create Entry</button>
         <Modal
           isOpen={this.state.modalIsOpen}
           onAfterOpen={this.afterOpenModal}
           onRequestClose={this.closeModal}
           style={customStyles}
-          contentLabel="Edit Wine">
+          contentLabel="Create Wine">
 
           <div>
             <MuiThemeProvider>
               <div>
-                <AppBar title="Edit Entry"/>
+                <AppBar title="Create Entry"/>
                 <div>
                   <TextField floatingLabelText="Producer" style={styleML}
-                             defaultValue={this.props.bottle.producer}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'producer')} />
+                             value={this.state.producer}
+                             onChange={(event,newValue) => this.setState({ 'producer': newValue })} />
                   <TextField floatingLabelText="Year" style={styleML}
-                             defaultValue={this.props.bottle.year}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'year')} />
+                             value={this.state.year}
+                             onChange={(event,newValue) => this.setState({ 'year': newValue })} />
                   <TextField floatingLabelText="Bin" style={styleML}
-                             defaultValue={this.props.bottle.bin}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'bin')} />
+                             value={this.state.bin}
+                             onChange={(event,newValue) => this.setState({ 'bin': newValue })} />
                   <br/>
                   <TextField floatingLabelText="Name" style={styleML}
-                             defaultValue={this.props.bottle.name}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'name')} />
+                             value={this.state.name}
+                             onChange={(event,newValue) => this.setState({ 'name': newValue })} />
                   <TextField floatingLabelText="Price" style={styleML}
-                             defaultValue={this.props.bottle.price}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'price')} />
+                             value={this.state.price}
+                             onChange={(event,newValue) => this.setState({ 'price': newValue })} />
                   <TextField floatingLabelText="Ready" style={styleML}
-                             defaultValue={this.props.bottle.ready}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'ready')} />
+                             value={this.state.ready}
+                             onChange={(event,newValue) => this.setState({ 'ready': newValue })} />
                   <br/>
                   <TextField floatingLabelText="Type" style={styleML}
-                             defaultValue={this.props.bottle.type}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'type')} />
+                             value={this.state.type}
+                             onChange={(event,newValue) => this.setState({ 'type': newValue })} />
                   <TextField floatingLabelText="Quantity" style={styleML}
-                             defaultValue={this.props.bottle.qty}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'qty')} />
+                             value={this.state.qty}
+                             onChange={(event,newValue) => this.setState({ 'qty': newValue })} />
                   <TextField floatingLabelText="Rating" style={styleML}
-                             defaultValue={this.props.bottle.rating}
-                             onChange={(event,newValue) => this.handleChange(event, newValue, 'rating')} />
+                             value={this.state.rating}
+                             onChange={(event,newValue) => this.setState({ 'rating': newValue })} />
                   <br/>
                   <RaisedButton label="Cancel" style={style}
                                 onClick={this.closeModal} />
@@ -150,4 +162,4 @@ const customStyles = {
   }
 };
 
-export default EditDialog;
+export default CreateDialog;

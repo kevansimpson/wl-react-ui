@@ -5,7 +5,7 @@ import App from './App';
 import About from './components/About';
 import Login from './components/Login';
 import * as serviceWorker from './serviceWorker';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 function requireAuth(nextState, replaceState) {
   console.log('REQUIRE AUTH');
